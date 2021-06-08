@@ -28,8 +28,7 @@ with open(seedFile) as f:
     seedUrls = f.readlines()
     f.close()
 
-fff = open(outputFile, "w")     #open brackets for json data
-fff.write("[\n")
+fff = open(outputFile, "w")     #create/replace new output file
 fff.close()
 
 jsonData = []
@@ -106,9 +105,5 @@ for seeds in seedUrls:
     #############
     """
     urlQueue = []       #empty urlQueue to restart
-
-with open(outputFile, 'a') as ffff:     #close brackets for json data
-    ffff.write("]")
-    ffff.close()
 
 print("DONE")

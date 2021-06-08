@@ -73,9 +73,11 @@ for seeds in seedUrls:
                     text = soup.get_text().replace("\n", " ").replace("\t", " ").replace("\r", " ")
                     text = " ".join(re.findall(r'\w+(?:\.?\w+)*', text))
                     title = str(soup.title).replace("<title>", "").replace("</title>", "")
-                    tempJson = {"title": title, "url": urlQueue[0], "text": text}
+                    tempJson = {"html": "<html> <body> " + str({"title": title, "url": urlQueue[0], "text": text}) + " </body> </html>"}
                     realJson = json.dumps(tempJson)
+                    indexJson = json.dumps({"index": {}})
                     with open(outputFile, 'a') as ff:
+                        ff.writelines(indexJson + "\n")
                         ff.writelines(realJson + "\n")
                         ff.close()
                     currPage += 1

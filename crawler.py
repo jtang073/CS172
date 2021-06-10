@@ -98,8 +98,6 @@ for seeds in seedUrls:
         urlQueue.pop(0)     #remove first in queue whether crawl was successful or not
         if (len(urlQueue) <= 0):
             currHop += 1
-            print("\nCurrent hop is now at: " + str(currHop))
-            print("newUrlQueue size: " + str(len(newUrlQueue)) + "\n")
             if (currHop < maxHops):
                 urlQueue = newUrlQueue
                 newUrlQueue = []

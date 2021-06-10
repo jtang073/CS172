@@ -33,8 +33,10 @@ fff.close()
 
 jsonData = []
 urlQueue = []
+newUrlQueue = []
 duplicateList = []
 currPage = 0
+indexJson = json.dumps({"index": {}})
 
 for seeds in seedUrls:
     urlQueue.append(seeds.rstrip())
@@ -42,7 +44,6 @@ for seeds in seedUrls:
     currHop = 0
     while (currPage < maxPages) and (currHop < maxHops) and len(urlQueue) > 0:      #3 limits: exceeding max total pages, exceeding max seed hops, or empty url queue from seed
         print("Crawling: " + str(urlQueue[0]))
-        duplicateList.append(urlQueue[0])
         try:
             ########### Reading Robots.txt ###########
             numSlashes = 0
@@ -66,7 +67,6 @@ for seeds in seedUrls:
             ##########################################
             if rp.can_fetch("*", urlQueue[0]):
                 try:
-                    domain = urllib.parse.urlparse(urlQueue[0]).netloc
                     page = requests.get(urlQueue[0])
                     soup = BeautifulSoup(page.content, 'html.parser')
                     text = soup.get_text().replace("\n", " ").replace("\t", " ").replace("\r", " ")
@@ -74,19 +74,18 @@ for seeds in seedUrls:
                     title = str(soup.title).replace("<title>", "").replace("</title>", "")
                     tempJson = {"html": "<html> <body> " + str({"title": title, "url": urlQueue[0], "text": text}) + " </body> </html>"}
                     realJson = json.dumps(tempJson)
-                    indexJson = json.dumps({"index": {}})
                     with open(outputFile, 'a') as ff:
                         ff.writelines(indexJson + "\n")
                         ff.writelines(realJson + "\n")
                         ff.close()
                     currPage += 1
-                    currHop += 1
                     for link in soup.find_all('a'):
                         try:
                             if "http://" in link.get('href') or "https://" in link.get('href'):     #some links don't contain full url but http/s does
-                                if link.get('href') not in duplicateList:
-                                    urlQueue.append(link.get('href'))
-                                    #duplicateList.append(link.get('href'))
+                                if ".mp4" not in link.get('href'):
+                                    if link.get('href') not in duplicateList:
+                                        newUrlQueue.append(link.get('href'))
+                                        duplicateList.append(link.get('href'))
                         except:
                             pass        #skip over all <a> headers with no href links
                 except:
@@ -97,6 +96,13 @@ for seeds in seedUrls:
         except:
             print("Error: Skipping URL because there was an error with with loading " + urlQueue[0])      #skip to be safe
         urlQueue.pop(0)     #remove first in queue whether crawl was successful or not
+        if (len(urlQueue) <= 0):
+            currHop += 1
+            print("\nCurrent hop is now at: " + str(currHop))
+            print("newUrlQueue size: " + str(len(newUrlQueue)) + "\n")
+            if (currHop < maxHops):
+                urlQueue = newUrlQueue
+                newUrlQueue = []
     """
     ### DEBUG ###
     for urls in urlQueue:
@@ -104,6 +110,4 @@ for seeds in seedUrls:
     print(len(urlQueue))
     #############
     """
-    urlQueue = []       #empty urlQueue to restart
-
 print("DONE")
